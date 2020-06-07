@@ -4,13 +4,13 @@ Simple asynchronous VK API client framework by megahomyak.
 It's so simple that it fits in one file.
 
 It supports:
-* VK API methods calling (with "call_method" method).
-* Receiving events (with longpoll; "get_new_events" and "listen" methods).
-* Errors raising if something went wrong (you can disable it in "\_\_init\_\_").
+* VK API methods calling (with "call_method" method)
+* Receiving events (with longpoll; "get_new_events" and "listen" methods)
+* Errors raising if something went wrong
 
 Warnings:
-* Before receiving events with "get_new_events", you need to prepare longpoll (with "prepare_longpoll" method).
-* In "listen" method "prepare_longpoll" is called automatically.
+* Before receiving events with "get_new_events", you need to prepare longpoll (with "prepare_longpoll" method)
+* In "listen" method "prepare_longpoll" is called automatically
 
 # How to use it
 1. Create object of class "SimpleAVK", passing token, aiohttp session, maybe group id or other params to it
