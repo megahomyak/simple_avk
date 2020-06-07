@@ -5,7 +5,6 @@ Simple asynchronous VK API client framework by megahomyak.
 Class SimpleAVK is what you need.
 """
 from typing import Union, AsyncGenerator, Optional, Dict, Any
-import aiohttp
 
 GROUPS_LONGPOLL_METHOD = "groups.getLongPollServer"
 USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
@@ -45,7 +44,7 @@ class SimpleAVK:
     )
 
     def __init__(
-            self, aiohttp_session: aiohttp.ClientSession,
+            self, aiohttp_session: "aiohttp.ClientSession",
             token: str = "", group_id: Optional[int] = None,
             api_version: str = "5.103", wait: int = 25,
             user_longpoll_mode: int = 2,
