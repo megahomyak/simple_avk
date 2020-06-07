@@ -4,10 +4,8 @@ Simple asynchronous VK API client framework by megahomyak.
 
 Class SimpleAVK is what you need.
 """
-from typing import Union, AsyncGenerator, Optional, List, Dict, Any
+from typing import Union, AsyncGenerator, Optional, Dict, Any
 import aiohttp
-JsonContents = Union[dict, list, str, int]
-Json = Union[Dict[str, JsonContents], List[JsonContents]]
 
 GROUPS_LONGPOLL_METHOD = "groups.getLongPollServer"
 USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
@@ -88,7 +86,7 @@ class SimpleAVK:
         self.user_longpoll_version = user_longpoll_version
         self.longpoll_method = ""
         self.longpoll_server_link = ""
-        self.longpoll_params: Dict[str, JsonContents] = {}
+        self.longpoll_params: Dict[str, Any] = {}
 
     async def prepare_longpoll(self) -> None:
         """
@@ -138,7 +136,7 @@ class SimpleAVK:
                 }
             )
 
-    async def get_new_events(self) -> List[Json]:
+    async def get_new_events(self) -> list:
         """
         Get new events (also called updates) from longpoll.
 
@@ -172,7 +170,7 @@ class SimpleAVK:
         )
         self.handle_vk_error(full_error_msg)
 
-    async def listen(self) -> AsyncGenerator[Json, None]:
+    async def listen(self) -> AsyncGenerator[Any, None]:
         """
         Catches new events from VK with infinite loop.
         Method "prepare_longpoll" is called here before infinite loop.
@@ -196,8 +194,9 @@ class SimpleAVK:
                 yield event
 
     async def call_method(
-            self, method_name: str, params: Optional[Dict[Union[str, int], Any]] = None,
-            method_type: str = "post") -> Union[Json, None]:
+            self, method_name: str,
+            params: Optional[Dict[Union[str, int], Any]] = None,
+            ) -> Union[Any, None]:
         """
         Calls VK API method.
 
@@ -208,7 +207,6 @@ class SimpleAVK:
 
         Keyword Arguments:
             params {dict} -- parameters passed to method (default dict())
-            method_type {str} -- "post" or "get" (default "post")
 
         Returns:
             {json (dict or list)} or {None} -- VK response (or None if there is an error)
@@ -223,12 +221,8 @@ class SimpleAVK:
             "access_token": self.token,
             "v": self.api_version
         }
-        method_type = method_type.lower()
         link = VK_METHOD_LINK.format(method_name)
-        if method_type == "post":
-            resp = await self.aiohttp_session.post(link, params=full_params)
-        if method_type == "get":
-            resp = await self.aiohttp_session.get(link, params=full_params)
+        resp = await self.aiohttp_session.post(link, params=full_params)
         resp_json = await resp.json()
         if "error" not in resp_json:
             return resp_json["response"]
@@ -269,4 +263,4 @@ class VKError(Exception):
     Exception.
     Raised when an error is received from the VK response.
     """
-    ...
+    pass
