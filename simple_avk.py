@@ -33,14 +33,14 @@ class SimpleAVK:
         Main class of simple_avk framework.
         
         It supports:
-            VK API methods calling (with "call_method" method).
-            Receiving events (with longpoll; "get_new_events" and "listen" methods).
-            Errors raising if something went wrong (you can disable it in "__init__").
+            VK API methods calling (with "call_method" method)
+            Receiving events (with longpoll; "get_new_events" and "listen" methods)
+            Errors raising if something went wrong
 
         Warnings:
             Before receiving events with "get_new_events", you need to prepare longpoll"""
-        """ (with "prepare_longpoll" method).
-            In "listen" method "prepare_longpoll" is called automatically.
+        """ (with "prepare_longpoll" method)
+            In "listen" method "prepare_longpoll" is called automatically
         """
     )
 
@@ -48,7 +48,6 @@ class SimpleAVK:
             self, aiohttp_session: aiohttp.ClientSession,
             token: str = "", group_id: Optional[int] = None,
             api_version: str = "5.103", wait: int = 25,
-            vk_errors_handling_type: str = "raise",
             user_longpoll_mode: int = 2,
             user_longpoll_version: int = 3) -> None:
         (
@@ -66,8 +65,6 @@ class SimpleAVK:
                 group_id {int} -- id of your VK group (default None; not necessary for user-bots)
                 api_version {str} (default "5.103")
                 wait {int} -- server waiting time in seconds (default 25)
-                vk_errors_handling_type {str} -- what to do with VK errors"""
-            """ (default "raise"; "raise" or "print", else do nothing)
                 user_longpoll_mode {int} -- VK longpoll mode (default 2; used in user longpoll)
                 user_longpoll_version {int} -- VK longpoll version"""
             """ (default 3; used in user longpoll)
@@ -81,7 +78,6 @@ class SimpleAVK:
         self.group_id = group_id
         self.api_version = api_version
         self.vk_wait = wait
-        self.vk_errors_handling_type = vk_errors_handling_type.lower()
         self.user_longpoll_mode = user_longpoll_mode
         self.user_longpoll_version = user_longpoll_version
         self.longpoll_method = ""
@@ -168,7 +164,7 @@ class SimpleAVK:
             error_num,
             error_desc
         )
-        self.handle_vk_error(full_error_msg)
+        raise VKError(full_error_msg)
 
     async def listen(self) -> AsyncGenerator[Any, None]:
         """
@@ -198,7 +194,7 @@ class SimpleAVK:
             params: Optional[Dict[Union[str, int], Any]] = None,
             ) -> Union[Any, None]:
         """
-        Calls VK API method.
+        Calls VK API method (with POST request).
 
         It's asynchronous method.
 
@@ -234,28 +230,7 @@ class SimpleAVK:
             error_code,
             error_msg
         )
-        self.handle_vk_error(full_error_msg)
-
-    def handle_vk_error(self, error_text: str) -> None:
-        """
-        Special method to handle VK errors.
-        Depends on vk_errors_handling_type argument from __init__.
-
-        It's synchronous method.
-
-        Arguments:
-            error_text {str} -- text of your error
-
-        Returns:
-            {None}
-
-        Raises:
-            {VKError} (from this module) -- any error from VK response
-        """
-        if self.vk_errors_handling_type == "raise":
-            raise VKError(error_text)
-        if self.vk_errors_handling_type == "print":
-            print(error_text)
+        raise VKError(full_error_msg)
 
 
 class VKError(Exception):
