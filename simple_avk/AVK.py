@@ -3,7 +3,7 @@ Simple asynchronous VK API client framework by megahomyak.
 
 Class SimpleAVK is what you need.
 """
-from typing import Union, AsyncGenerator, Optional, Dict, Any
+from typing import AsyncGenerator, Optional, Any
 
 GROUPS_LONGPOLL_METHOD = "groups.getLongPollServer"
 USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
@@ -80,7 +80,7 @@ class SimpleAVK:
         self.user_longpoll_version = user_longpoll_version
         self.longpoll_method = ""
         self.longpoll_server_link = ""
-        self.longpoll_params: Dict[str, Any] = {}
+        self.longpoll_params = {}
 
     async def prepare_longpoll(self) -> None:
         """
@@ -189,8 +189,8 @@ class SimpleAVK:
 
     async def call_method(
             self, method_name: str,
-            params: Optional[Dict[Union[str, int], Any]] = None,
-            ) -> Union[Any, None]:
+            params: dict = None,
+            ) -> dict:
         """
         Calls VK API method (with POST request).
 
