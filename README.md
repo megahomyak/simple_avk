@@ -1,8 +1,9 @@
 # simple_avk
 Simple asynchronous VK API client framework by megahomyak.
 
+For Python 3.5+ (because it uses typing)!
+
 It's so simple that it fits in one file.
-Also its only requirement is standard library "typing".
 
 It supports:
 * VK API methods calling (with "call_method" method)
@@ -14,7 +15,7 @@ Warnings:
 * In "listen" method "prepare_longpoll" is called automatically
 
 # How to use it
-1. Create object of class "SimpleAVK", passing token, aiohttp session, maybe group id or other params to it
+1. Create object of class "SimpleAVK" (simple_avk.SimpleAVK), passing token, aiohttp session, maybe group id or other params to it
 2. Here we go! Now you can call VK methods (with "call_method" method), listen to the longpoll ("listen" method) or get list of events ("get_new_events" method, but at first you need to prepare longpoll with "prepare_longpoll" method)
 
 # How to respond asynchronously well
