@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Simple asynchronous VK API client framework by megahomyak.
 
