@@ -2,13 +2,13 @@ from distutils.core import setup
 setup(
     name = "simple_avk",
     packages = ["simple_avk"],
-    version = "0.5",
+    version = "1.0",
     license = "unlicense",
     description = "Simple asynchronous VK API client framework by megahomyak",
     author = "megahomyak",
     author_email = "g.megahomyak@gmail.com",
     url = "https://github.com/megahomyak/simple_avk",
-    download_url = "https://github.com/megahomyak/simple_avk/archive/v_05.tar.gz",
+    download_url = "https://github.com/megahomyak/simple_avk/archive/v1.0.tar.gz",
     keywords = ["SIMPLE", "ASYNCHRONOUS", "VK", "API"],
     install_requires = [],
     classifiers = [
