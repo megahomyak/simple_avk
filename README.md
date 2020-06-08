@@ -2,6 +2,7 @@
 Simple asynchronous VK API client framework by megahomyak.
 
 It's so simple that it fits in one file.
+Also its only requirement is standard library "typing".
 
 It supports:
 * VK API methods calling (with "call_method" method)
