@@ -17,7 +17,7 @@ Warnings:
 1. Create object of class "SimpleAVK", passing token, aiohttp session, maybe group id or other params to it
 2. Here we go! Now you can call VK methods (with "call_method" method), listen to the longpoll ("listen" method) or get list of events ("get_new_events" method, but at first you need to prepare longpoll with "prepare_longpoll" method)
 
-# Possible async problems
+# How to respond asynchronously well
 To respond truly asynchronously, you need to throw incoming events in handlers and then just forget about them, handler will do its work. Like this:
 1. You got a response
 2. It has type "message_new"
