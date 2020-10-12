@@ -1,9 +1,6 @@
-"""
-Simple asynchronous VK API client framework by megahomyak.
-
-Class SimpleAVK is what you need.
-"""
 from typing import AsyncGenerator, Optional, Any
+
+import aiohttp
 
 GROUPS_LONGPOLL_METHOD = "groups.getLongPollServer"
 USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
@@ -26,51 +23,42 @@ VK_METHOD_LINK = "https://api.VK.com/method/{}"
 
 
 class SimpleAVK:
-    (
-        """
-        Main class of simple_avk framework.
-        
-        It supports:
-            VK API methods calling (with "call_method" method)
-            Receiving events (with longpoll; "get_new_events" and "listen" methods)
-            Errors raising if something went wrong
 
-        Warnings:
-            Before receiving events with "get_new_events", you need to prepare longpoll"""
-        """ (with "prepare_longpoll" method)
-            In "listen" method "prepare_longpoll" is called automatically
-        """
-    )
+    """
+    Main class of the simple_avk library.
+
+    It supports:
+        VK API methods calling (with "call_method" method)
+        Receiving events (with longpoll; "get_new_events" and "listen" methods)
+        Errors raising if something went wrong
+    """
 
     def __init__(
-            self, aiohttp_session: "aiohttp.ClientSession",
+            self, aiohttp_session: aiohttp.ClientSession,
             token: str = "", group_id: Optional[int] = None,
             api_version: str = "5.103", wait: int = 25,
             user_longpoll_mode: int = 2,
             user_longpoll_version: int = 3) -> None:
-        (
-            """
-            Setting aiohttp session, token, group id and api version.
-            If your bot is on user account, you don't need to specify group id.
+        """
+        Setting aiohttp session, token, group id and api version.
+        If your bot is on user account, you don't need to specify group id.
 
-            It's synchronous method.
-
-            Arguments:
-                aiohttp_session {aiohttp.ClientSession}
-
-            Keyword Arguments:
-                token {str} -- token of your VK bot (default "")
-                group_id {int} -- id of your VK group (default None; not necessary for user-bots)
-                api_version {str} (default "5.103")
-                wait {int} -- server waiting time in seconds (default 25)
-                user_longpoll_mode {int} -- VK longpoll mode (default 2; used in user longpoll)
-                user_longpoll_version {int} -- VK longpoll version"""
-            """ (default 3; used in user longpoll)
-
-            Returns:
-                {None}
-            """
-        )
+        Args:
+            aiohttp_session:
+                ClientSession of the aiohttp to make asynchronous requests
+            token:
+                token of your VK bot (default "")
+            group_id:
+                id of your VK group (default None; not necessary for user-bots)
+            api_version:
+                version of VK api to use (default "5.103")
+            wait:
+                server waiting time in seconds (default 25)
+            user_longpoll_mode:
+                VK longpoll mode (default 2; used in user longpoll)
+            user_longpoll_version:
+                VK longpoll version (default 3; used in user longpoll)
+        """
         self.aiohttp_session = aiohttp_session
         self.token = token
         self.group_id = group_id
@@ -82,20 +70,12 @@ class SimpleAVK:
         self.longpoll_server_link = ""
         self.longpoll_params = {}
 
-    async def prepare_longpoll(self) -> None:
+    async def _prepare_longpoll(self) -> None:
         """
         Getting longpoll server to receive events.
 
-        It's asynchronous method.
-
-        Arguments:
-            None
-
-        Returns:
-            {None}
-
         Raises:
-            {VKError} (from this module) -- any error from VK response
+           VKError: any error from VK response
         """
         if self.group_id:
             self.longpoll_method = GROUPS_LONGPOLL_METHOD
@@ -116,7 +96,7 @@ class SimpleAVK:
         else:
             self.longpoll_server_link = f"https://{vk_longpoll_server}"
         self.longpoll_params = {
-            "act": "a_check",  # What a_check means lol, they didn't explained it in docs
+            "act": "a_check",
             "key": vk_secret_key,
             "ts": vk_last_event_id,
             "wait": self.vk_wait
@@ -134,23 +114,20 @@ class SimpleAVK:
         """
         Get new events (also called updates) from longpoll.
 
-        It's asynchronous method.
-
-        Arguments:
-            None
-
         Returns:
-            {list} -- new events catched by longpoll
+            list of new events caught by longpoll
 
         Raises:
-            {VKError} (from this module) -- any error from VK longpoll
+            VKError: any error from VK longpoll
         """
+        if not self.longpoll_server_link:
+            await self._prepare_longpoll()
         resp = await self.aiohttp_session.get(
             self.longpoll_server_link,
             params=self.longpoll_params
         )
         resp_json = await resp.json()
-        if not "failed" in resp_json:
+        if "failed" not in resp_json:
             if "ts" in resp_json:
                 self.longpoll_params["ts"] = resp_json["ts"]
             return resp_json["updates"]
@@ -170,43 +147,30 @@ class SimpleAVK:
         Method "prepare_longpoll" is called here before infinite loop.
         Can be used in "async for" loop.
 
-        It's asynchronous method.
-
-        Arguments:
-            None
-
         Yields:
-            {json (dict or list)} -- event catched by longpoll
+            event caught by longpoll
 
         Raises:
-            {VKError} (from this module) -- any error from VK longpoll
+            VKError: any error from VK longpoll
         """
-        await self.prepare_longpoll()
         while True:
             events = await self.get_new_events()
             for event in events:
                 yield event
 
-    async def call_method(
-            self, method_name: str,
-            params: dict = None,
-            ) -> dict:
+    async def call_method(self, method_name: str, params: dict = None) -> dict:
         """
         Calls VK API method (with POST request).
 
-        It's asynchronous method.
-
         Arguments:
-            method_name {str} -- name of method (format: "METHODS_GROUP.METHOD")
-
-        Keyword Arguments:
-            params {dict} -- parameters passed to method (default dict())
+            method_name: name of method (format: "METHODS_GROUP.METHOD")
+            params: parameters passed to method (default None, later sets to {})
 
         Returns:
-            {json (dict or list)} or {None} -- VK response (or None if there is an error)
+            VK response
 
         Raises:
-            {VKError} (from this module) -- any error from VK response
+            VKError - any error from VK response
         """
         if not params:
             params = {}
