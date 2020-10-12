@@ -1,3 +1,8 @@
+# EVERYTHING HERE IS BAD!
+# VERY BAD!
+# REALLY!
+# I WILL REWRITE IT!
+
 # simple_avk
 Simple asynchronous VK API client framework by megahomyak.
 
