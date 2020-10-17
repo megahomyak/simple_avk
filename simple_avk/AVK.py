@@ -124,7 +124,7 @@ class SimpleAVK:
             await self._prepare_longpoll()
         resp = await self.aiohttp_session.get(
             self.longpoll_server_link,
-            data=self.longpoll_params
+            params=self.longpoll_params
         )
         resp_json = await resp.json()
         if "failed" not in resp_json:
