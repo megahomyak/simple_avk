@@ -162,7 +162,7 @@ class SimpleAVK:
         """
         Calls VK API method (with POST request).
 
-        Arguments:
+        Args:
             method_name: name of method (format: "METHODS_GROUP.METHOD")
             params: parameters passed to method (default None, later sets to {})
 
@@ -170,7 +170,7 @@ class SimpleAVK:
             VK response
 
         Raises:
-            VKError - any error from VK response
+            VKError: any error from VK response
         """
         if not params:
             params = {}
