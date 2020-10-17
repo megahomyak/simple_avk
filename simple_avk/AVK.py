@@ -124,7 +124,7 @@ class SimpleAVK:
             await self._prepare_longpoll()
         resp = await self.aiohttp_session.get(
             self.longpoll_server_link,
-            params=self.longpoll_params
+            data=self.longpoll_params
         )
         resp_json = await resp.json()
         if "failed" not in resp_json:
@@ -180,7 +180,7 @@ class SimpleAVK:
             "v": self.api_version
         }
         link = VK_METHOD_LINK.format(method_name)
-        resp = await self.aiohttp_session.post(link, params=full_params)
+        resp = await self.aiohttp_session.post(link, data=full_params)
         resp_json = await resp.json()
         if "error" not in resp_json:
             return resp_json["response"]
