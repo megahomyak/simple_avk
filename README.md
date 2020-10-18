@@ -34,4 +34,8 @@ It supports:
 
    Getting list of events example:
 
-       events = vk.get_new_events()
+       events = await vk.get_new_events()
+
+   Calling API method example:
+
+       users_info = await vk.call_method("users.get", {"user_ids": "1,2,3"})
