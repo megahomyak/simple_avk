@@ -131,15 +131,13 @@ class SimpleAVK:
             if "ts" in resp_json:
                 self.longpoll_params["ts"] = resp_json["ts"]
             return resp_json["updates"]
-        error_num = resp_json["failed"]
-        error_desc = LONGPOLL_ERROR_DESCRIPTIONS[error_num].format(
-            self.longpoll_method
+        error_code = resp_json["failed"]
+        raise LongpollError(
+            error_code,
+            LONGPOLL_ERROR_DESCRIPTIONS[error_code].format(
+                self.longpoll_method
+            )
         )
-        full_error_msg = LONGPOLL_ERROR_MSG.format(
-            error_num,
-            error_desc
-        )
-        raise VKError(full_error_msg)
 
     async def listen(self) -> AsyncGenerator[Any, None]:
         """
@@ -185,19 +183,44 @@ class SimpleAVK:
         if "error" not in resp_json:
             return resp_json["response"]
         error = resp_json["error"]
-        error_code = error["error_code"]
-        error_msg = error["error_msg"]
-        full_error_msg = VK_METHOD_ERROR_MSG.format(
-            method_name,
-            error_code,
-            error_msg
+        raise MethodError(
+            method_name, error["error_code"], error["error_msg"]
         )
-        raise VKError(full_error_msg)
 
 
-class VKError(Exception):
+class MethodError(Exception):
+
     """
     Exception.
-    Raised when an error is received from the VK response.
+    Raised when an error is received from the VK method response.
     """
-    pass
+
+    def __init__(self, method_name: str, error_code: int, message: str) -> None:
+        self.method_name = method_name
+        self.error_code = error_code
+        self.message = message
+
+    def __str__(self) -> str:
+        return VK_METHOD_ERROR_MSG.format(
+            self.method_name,
+            self.error_code,
+            self.message
+        )
+
+
+class LongpollError(Exception):
+
+    """
+    Exception.
+    Raised when an error is received from the VK longpoll.
+    """
+
+    def __init__(self, error_code: int, message: str) -> None:
+        self.error_code = error_code
+        self.message = message
+
+    def __str__(self) -> str:
+        return LONGPOLL_ERROR_MSG.format(
+            self.error_code,
+            self.message
+        )

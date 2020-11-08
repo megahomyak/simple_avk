@@ -1,2 +1,1 @@
-from simple_avk.AVK import SimpleAVK
-from simple_avk.AVK import VKError
+from simple_avk.AVK import SimpleAVK, LongpollError, MethodError
