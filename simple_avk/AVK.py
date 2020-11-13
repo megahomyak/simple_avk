@@ -71,6 +71,13 @@ class SimpleAVK:
         self.longpoll_server_link = ""
         self.longpoll_params = {}
 
+    async def _get_new_longpoll_info(self) -> dict:
+        return await self.call_method(
+            self.longpoll_method,
+            # Line too long cuz pep8 symbol limit sucks
+            params={} if self.group_id is None else {"group_id": self.group_id}
+        )
+
     async def _prepare_longpoll(self) -> None:
         """
         Getting longpoll server to receive events.
@@ -78,17 +85,11 @@ class SimpleAVK:
         Raises:
            VKError: any error from VK response
         """
-        if self.group_id:
-            self.longpoll_method = GROUPS_LONGPOLL_METHOD
-            longpoll_params = {"group_id": self.group_id}
-        else:
-            # If group id isn't specified - it's user longpoll
-            self.longpoll_method = USERS_LONGPOLL_METHOD
-            longpoll_params = {}
-        resp = await self.call_method(
-            self.longpoll_method,
-            params=longpoll_params
+        # If group id isn't specified - it's user longpoll
+        self.longpoll_method = (
+            GROUPS_LONGPOLL_METHOD if self.group_id else USERS_LONGPOLL_METHOD
         )
+        resp = await self._get_new_longpoll_info()
         vk_last_event_id = resp["ts"]
         vk_secret_key = resp["key"]
         vk_longpoll_server = resp["server"]
@@ -123,22 +124,35 @@ class SimpleAVK:
         """
         if not self.longpoll_server_link:
             await self._prepare_longpoll()
-        resp = await self.aiohttp_session.get(
-            self.longpoll_server_link,
-            params=self.longpoll_params
-        )
-        resp_json = await resp.json()
-        if "failed" not in resp_json:
-            if "ts" in resp_json:
-                self.longpoll_params["ts"] = resp_json["ts"]
-            return resp_json["updates"]
-        error_code = resp_json["failed"]
-        raise exceptions.LongpollError(
-            error_code,
-            LONGPOLL_ERROR_DESCRIPTIONS[error_code].format(
-                self.longpoll_method
+        updates = None
+        while updates is None:
+            resp = await self.aiohttp_session.get(
+                self.longpoll_server_link,
+                params=self.longpoll_params
             )
-        )
+            resp_json = await resp.json()
+            del resp
+            if "failed" in resp_json:
+                error_code = resp_json["failed"]
+                if error_code == 1:  # Events are partially lost or outdated
+                    # This error gives a new ts
+                    self.longpoll_params["ts"] = resp_json["ts"]
+                elif error_code in (2, 3):  # 2 - key is outdated
+                    new_server_info = await self._get_new_longpoll_info()
+                    self.longpoll_params["key"] = new_server_info["key"]
+                    if error_code == 3:  # User info lost
+                        self.longpoll_params["ts"] = new_server_info["ts"]
+                else:
+                    raise exceptions.LongpollError(
+                        error_code,
+                        LONGPOLL_ERROR_DESCRIPTIONS[error_code].format(
+                            self.longpoll_method
+                        )
+                    )
+            else:
+                self.longpoll_params["ts"] = resp_json["ts"]
+                updates = resp_json["updates"]
+        return updates
 
     async def listen(self) -> AsyncGenerator[Any, None]:
         """
