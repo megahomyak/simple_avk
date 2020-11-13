@@ -3,7 +3,6 @@ VK_METHOD_ERROR_MSG = "Error in method {} with code {}: {}"
 
 
 class MethodError(Exception):
-
     """
     Exception.
     Raised when an error is received from the VK method response.
@@ -23,7 +22,6 @@ class MethodError(Exception):
 
 
 class LongpollError(Exception):
-
     """
     Exception.
     Raised when an error is received from the VK longpoll.

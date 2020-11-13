@@ -25,7 +25,6 @@ VK_METHOD_LINK = "https://api.VK.com/method/{}"
 
 
 class SimpleAVK:
-
     """
     Main class of the simple_avk library.
 
