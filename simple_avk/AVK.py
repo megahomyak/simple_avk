@@ -2,8 +2,11 @@ from typing import AsyncGenerator, Optional, Any
 
 import aiohttp
 
+from simple_avk import exceptions
+
 GROUPS_LONGPOLL_METHOD = "groups.getLongPollServer"
 USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
+
 LONGPOLL_ERROR_DESCRIPTIONS = {
     1: (
         "Events history is outdated or partially lost, app "
@@ -17,8 +20,7 @@ LONGPOLL_ERROR_DESCRIPTIONS = {
     4: (
         "Invalid version number passed in 'version' parameter.")
 }
-LONGPOLL_ERROR_MSG = "Error in longpoll with code {}: {}"
-VK_METHOD_ERROR_MSG = "Error in method {} with code {}: {}"
+
 VK_METHOD_LINK = "https://api.VK.com/method/{}"
 
 
@@ -132,7 +134,7 @@ class SimpleAVK:
                 self.longpoll_params["ts"] = resp_json["ts"]
             return resp_json["updates"]
         error_code = resp_json["failed"]
-        raise LongpollError(
+        raise exceptions.LongpollError(
             error_code,
             LONGPOLL_ERROR_DESCRIPTIONS[error_code].format(
                 self.longpoll_method
@@ -183,44 +185,6 @@ class SimpleAVK:
         if "error" not in resp_json:
             return resp_json["response"]
         error = resp_json["error"]
-        raise MethodError(
+        raise exceptions.MethodError(
             method_name, error["error_code"], error["error_msg"]
-        )
-
-
-class MethodError(Exception):
-
-    """
-    Exception.
-    Raised when an error is received from the VK method response.
-    """
-
-    def __init__(self, method_name: str, error_code: int, message: str) -> None:
-        self.method_name = method_name
-        self.error_code = error_code
-        self.message = message
-
-    def __str__(self) -> str:
-        return VK_METHOD_ERROR_MSG.format(
-            self.method_name,
-            self.error_code,
-            self.message
-        )
-
-
-class LongpollError(Exception):
-
-    """
-    Exception.
-    Raised when an error is received from the VK longpoll.
-    """
-
-    def __init__(self, error_code: int, message: str) -> None:
-        self.error_code = error_code
-        self.message = message
-
-    def __str__(self) -> str:
-        return LONGPOLL_ERROR_MSG.format(
-            self.error_code,
-            self.message
         )
