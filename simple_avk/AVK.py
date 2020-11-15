@@ -112,18 +112,7 @@ class SimpleAVK:
                 }
             )
 
-    async def get_new_events(self) -> list:
-        """
-        Get new events (also called updates) from longpoll.
-
-        Returns:
-            list of new events caught by longpoll
-
-        Raises:
-            VKError: any error from VK longpoll
-        """
-        if not self.longpoll_server_link:
-            await self._prepare_longpoll()
+    async def _real_get_new_events(self) -> list:
         updates = None
         while updates is None:
             resp = await self.aiohttp_session.get(
@@ -141,6 +130,7 @@ class SimpleAVK:
                     new_server_info = await self._get_new_longpoll_info()
                     self.longpoll_params["key"] = new_server_info["key"]
                     if error_code == 3:  # User info lost
+                        # This error gives a new ts
                         self.longpoll_params["ts"] = new_server_info["ts"]
                 else:
                     raise exceptions.LongpollError(
@@ -153,6 +143,22 @@ class SimpleAVK:
                 self.longpoll_params["ts"] = resp_json["ts"]
                 updates = resp_json["updates"]
         return updates
+
+    async def get_new_events(self) -> list:
+        """
+        Get new events (also called updates) from longpoll.
+
+        Returns:
+            list of new events caught by longpoll
+
+        Raises:
+            VKError: any error from VK longpoll
+        """
+        await self._prepare_longpoll()
+        # noinspection PyAttributeOutsideInit
+        # because I'm changing a function to make something like state pattern
+        self.get_new_events = self._real_get_new_events
+        return await self._real_get_new_events()
 
     async def listen(self) -> AsyncGenerator[Any, None]:
         """
