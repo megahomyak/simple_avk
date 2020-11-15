@@ -7,19 +7,9 @@ from simple_avk import exceptions
 GROUPS_LONGPOLL_METHOD = "groups.getLongPollServer"
 USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
 
-LONGPOLL_ERROR_DESCRIPTIONS = {
-    1: (
-        "Events history is outdated or partially lost, app "
-        "can get further events using new ts value from server response."),
-    2: (
-        "Key is outdated, you need to get new key "
-        "using method {}."),
-    3: (
-        "Information about user is lost, you need to request "
-        "new key and ts using method {}."),
-    4: (
-        "Invalid version number passed in 'version' parameter.")
-}
+FOURTH_LONGPOLL_ERROR_DESCRIPTION = (
+    "Invalid version number passed in 'version' parameter."
+)
 
 VK_METHOD_LINK = "https://api.VK.com/method/{}"
 
@@ -134,10 +124,7 @@ class SimpleAVK:
                         self.longpoll_params["ts"] = new_server_info["ts"]
                 else:
                     raise exceptions.LongpollError(
-                        error_code,
-                        LONGPOLL_ERROR_DESCRIPTIONS[error_code].format(
-                            self.longpoll_method
-                        )
+                        error_code, FOURTH_LONGPOLL_ERROR_DESCRIPTION
                     )
             else:
                 self.longpoll_params["ts"] = resp_json["ts"]
