@@ -10,6 +10,7 @@ USERS_LONGPOLL_METHOD = "messages.getLongPollServer"
 FOURTH_LONGPOLL_ERROR_DESCRIPTION = (
     "Invalid version number passed in 'version' parameter."
 )
+UNKNOWN_LONGPOLL_ERROR_MSG = "Unknown longpoll error!"
 
 VK_METHOD_LINK = "https://api.VK.com/method/{}"
 
@@ -122,9 +123,13 @@ class SimpleAVK:
                     if error_code == 3:  # User info lost
                         # This error gives a new ts
                         self.longpoll_params["ts"] = new_server_info["ts"]
-                else:
+                elif error_code == 4:
                     raise exceptions.LongpollError(
                         error_code, FOURTH_LONGPOLL_ERROR_DESCRIPTION
+                    )
+                else:
+                    raise exceptions.LongpollError(
+                        error_code, UNKNOWN_LONGPOLL_ERROR_MSG
                     )
             else:
                 self.longpoll_params["ts"] = resp_json["ts"]
