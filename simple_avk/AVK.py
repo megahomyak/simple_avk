@@ -106,10 +106,13 @@ class SimpleAVK:
     async def _real_get_new_events(self) -> list:
         updates = None
         while updates is None:
-            resp = await self.aiohttp_session.get(
-                self.longpoll_server_link,
-                params=self.longpoll_params
-            )
+            try:
+                resp = await self.aiohttp_session.get(
+                    self.longpoll_server_link,
+                    params=self.longpoll_params
+                )
+            except aiohttp.ServerDisconnectedError:
+                continue
             resp_json = await resp.json()
             del resp
             if "failed" in resp_json:
