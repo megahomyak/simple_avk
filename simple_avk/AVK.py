@@ -1,3 +1,4 @@
+import asyncio
 from typing import AsyncGenerator, Optional, Any
 
 import aiohttp
@@ -111,7 +112,7 @@ class SimpleAVK:
                     self.longpoll_server_link,
                     params=self.longpoll_params
                 )
-            except aiohttp.ServerDisconnectedError:
+            except (aiohttp.ServerDisconnectedError, asyncio.TimeoutError):
                 continue
             resp_json = await resp.json()
             del resp
