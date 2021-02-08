@@ -112,7 +112,10 @@ class SimpleAVK:
                     self.longpoll_server_link,
                     params=self.longpoll_params
                 )
-            except (aiohttp.ServerDisconnectedError, asyncio.TimeoutError):
+            except (
+                aiohttp.ServerDisconnectedError, asyncio.TimeoutError,
+                aiohttp.ClientOSError
+            ):
                 continue
             resp_json = await resp.json()
             del resp
