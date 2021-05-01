@@ -2,6 +2,7 @@ import asyncio
 from typing import AsyncGenerator, Optional, Any
 
 import aiohttp
+from aiohttp import client_exceptions as aiohttp_client_exceptions
 
 from simple_avk import exceptions
 
@@ -117,7 +118,13 @@ class SimpleAVK:
                 aiohttp.ClientOSError
             ):
                 continue
-            resp_json = await resp.json()
+            try:
+                resp_json = await resp.json(content_type=None)
+            except aiohttp_client_exceptions.ContentTypeError:
+                # One time VK api gave me an HTML page (or just json with
+                # 'text/html' mime-type, IDK now), so my bot crashed. This
+                # is all you should know about VK api
+                continue
             del resp
             if "failed" in resp_json:
                 error_code = resp_json["failed"]
@@ -189,6 +196,7 @@ class SimpleAVK:
 
         Raises:
             VKError: any error from VK response
+            aiohttp.client_exceptions.ContentTypeError: if response is not JSON
         """
         if not params:
             params = {}
@@ -199,7 +207,7 @@ class SimpleAVK:
         }
         link = VK_METHOD_LINK.format(method_name)
         resp = await self.aiohttp_session.post(link, data=full_params)
-        resp_json = await resp.json()
+        resp_json = await resp.json(content_type=None)
         if "error" not in resp_json:
             return resp_json["response"]
         error = resp_json["error"]
