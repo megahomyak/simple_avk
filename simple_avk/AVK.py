@@ -65,11 +65,16 @@ class SimpleAVK:
         self.longpoll_params = {}
 
     async def _get_new_longpoll_info(self) -> dict:
-        return await self.call_method(
-            self.longpoll_method,
-            # Line too long cuz pep8 symbol limit sucks
-            params={} if self.group_id is None else {"group_id": self.group_id}
-        )
+        while True:
+            try:
+                return await self.call_method(
+                    self.longpoll_method,
+                    # Line too long cuz pep8 symbol limit sucks
+                    params={}
+                    if self.group_id is None else {"group_id": self.group_id}
+                )
+            except exceptions.MethodError:
+                pass
 
     async def _prepare_longpoll(self) -> None:
         """
